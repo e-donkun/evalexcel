@@ -95,6 +95,8 @@ div.pane {
 .mini {
  font-size             : 12px;
  height                : 20px;
+ padding-top           : 0;
+ paddint-bottom        : 0;
  margin                : 0;
 }
 
