@@ -11,6 +11,7 @@
 <script src="./js/base64.js"></script>
 <script src="./js/inflate.js"></script>
 <script src="./js/deflate.js"></script>
+<script src="./excel.js"></script>
 <script src="./lib.js"></script>
 <script src="./main.js"></script>
 
@@ -54,7 +55,7 @@
 　　　　＜注意点＞
 	※評価基準データ、判定対象ファイルをまとめてファイルに出力できます。（json形式）
 	※ブラウザに一時保存もできます。（ただし、保存可能最大容量はブラウザにより制限あり）
-	※アップロードしたxlsxファイルは、データ変換時にのみサーバ上に一時保存されますが、json形式変換後はすべてブラウザ上のJavaScript内で処理されます。
+	※xlsxファイルはサーバには送信されず、すべてブラウザ上のJavaScriptで読み込み・変換されます。
 	
 	[履歴]
 	Ver0.1   2016/09/16 モデル読み込み部分完成
@@ -69,6 +70,7 @@
 	Ver0.9.2 2016/09/28 判定対象ファイル表示でも評価設定が変更可能に
 	Ver0.9.3 2016/09/30 ×判定を明示的にするように変更。不具合修正
 	Ver0.9.4 2016/09/30 採点結果点数化してを表示
+	Ver1.0   2026/09/16 サーバサイド処理(PHP)を廃止し、xlsx→JSON変換をブラウザ側JavaScriptに移行
 
 	TODO:使い方ページ作成、自己採点用ページ、セル複数範囲選択[shift+click]
 	

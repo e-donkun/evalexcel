@@ -27,34 +27,25 @@ $(function(){
 	//評価基準データ（model)アップロード
 	$("#modelupload").on("change",function(){
 		console.log("#modelupload","change");
-		var fd = new FormData();
-		if ($("#modelupload").val()!== '') {
-			fd.append( "model", $("#modelupload").prop("files")[0] );
-		}
-		var postData = {
-			type : "POST",
-			dataType : "text",
-			data : fd,
-			processData : false,
-			contentType : false
-		};
-		$.ajax("xlsx2json.php", postData).done(function( json_data ){
-			if( json_data.substr(0,5) != "Error" && json_data.substr(0,14) != "Could not open"){
-				obj_data["model"] = JSON.parse(json_data);
-				$("#group_show_model").show();
-				obj_data["model_filename"]=basename($("#modelupload").val());
-				$("#group_show_model > #model_filename").html(obj_data["model_filename"]);
-				$("#group_modelupload").hide();
+		var file = $("#modelupload").prop("files")[0];
+		if(!file){ return; }
 
-				localStorage.removeItem('model');
-				$('#form_model').empty();
-			} else {
-				alert("ファイルにエラーがあります。");
-				obj_data["model"] = {};
-				delete obj_data["model_filename"];
-				$("#group_show_model").hide();
-				$("#group_modelupload").show();
-			}
+		ExcelReader.readXlsxFile(file).then(function( sheets ){
+			obj_data["model"] = sheets;
+			$("#group_show_model").show();
+			obj_data["model_filename"]=basename($("#modelupload").val());
+			$("#group_show_model > #model_filename").html(obj_data["model_filename"]);
+			$("#group_modelupload").hide();
+
+			localStorage.removeItem('model');
+			$('#form_model').empty();
+		}).catch(function( err ){
+			console.error(err);
+			alert("ファイルにエラーがあります。");
+			obj_data["model"] = {};
+			delete obj_data["model_filename"];
+			$("#group_show_model").hide();
+			$("#group_modelupload").show();
 		});
 	});
 	
@@ -103,71 +94,49 @@ $(function(){
 	//評価対象ファイル(target)アップロード
 	$("#fileupload").on("change",function(){
 		console.log("#fileupload","change");
-		var fd = new FormData();
-		
-		if($("#fileupload").prop("files").length>500){
+		var files = $("#fileupload").prop("files");
+
+		if(files.length>500){
 			alert("500ファイルを超えるアップロードはできません。");
 			return;
 		}
-		
-		if($("#fileupload").prop("files").length>0) {
-			for(var i=0;i<$("#fileupload").prop("files").length;i++){
-				if(i<500){
-					fd.append( "upfile"+i, $("#fileupload").prop("files")[i] );
-				}
-			}
+		if(files.length===0){ return; }
+
+		if(!isset(obj_data["target_files"])){
+			obj_data["target_files"] = {};
 		}
-		var postData = {
-			type : "POST",
-			dataType : "text",
-			data : fd,
-			processData : false,
-			contentType : false
-		};
-		
-		
+
 		$("ul#filelist").empty();
 		$("ul#filelist").after("<div id='spinner' style='text-align:center;'><i class='fa fa-spinner fa-pulse fa-4x'></i></div>");
-		
-		$.ajax("xlsx2json.php", postData).done(function( json_data ){
-			
-			if(!isset(obj_data["target_files"])){
-				obj_data["target_files"] = {};
-			}
-			
-			//console.log(json_data);
-			if( json_data.substr(0,5) != "Error" && json_data.substr(0,14) != "Could not open"){
-			
-				var _obj_target = JSON.parse(json_data);
 
-				$(".right_pane").hide();
-				for(var upload_filename in _obj_target){
-					if(_obj_target.hasOwnProperty(upload_filename)){
+		ExcelReader.readXlsxFiles(files).then(function( _obj_target ){
 
-						var new_uploadfilename = upload_filename;
-						if(obj_data["target_files"].hasOwnProperty(new_uploadfilename)){
-							var i=1;
-							while(new_uploadfilename == upload_filename){
-								var _filename = upload_filename + "(" + i++ + ")";
-								if(!obj_data["target_files"].hasOwnProperty(_filename)){
-									new_uploadfilename = _filename;
-								}
-								if(i>100){ break; }
-								console.log(_filename,new_uploadfilename);
+			$(".right_pane").hide();
+			for(var upload_filename in _obj_target){
+				if(_obj_target.hasOwnProperty(upload_filename)){
+
+					var new_uploadfilename = upload_filename;
+					if(obj_data["target_files"].hasOwnProperty(new_uploadfilename)){
+						var i=1;
+						while(new_uploadfilename == upload_filename){
+							var _filename = upload_filename + "(" + i++ + ")";
+							if(!obj_data["target_files"].hasOwnProperty(_filename)){
+								new_uploadfilename = _filename;
 							}
+							if(i>100){ break; }
+							console.log(_filename,new_uploadfilename);
 						}
-						obj_data["target_files"][new_uploadfilename] = _obj_target[upload_filename];
 					}
+					obj_data["target_files"][new_uploadfilename] = _obj_target[upload_filename];
 				}
-				
-			} else {
-				alert("ファイルにエラーがあります。");
 			}
-			
+		}).catch(function( err ){
+			console.error(err);
+			alert("ファイルにエラーがあります。\n"+err.message);
+		}).then(function(){
 			//console.log(obj_data["target_files"]);
 			obj_data["target_files"] = objectSort(obj_data["target_files"]);
-			
-			//$("ul#filelist").empty();
+
 			$("#spinner").remove();
 			for(var filename in obj_data["target_files"]){
 				if(obj_data["target_files"].hasOwnProperty(filename)){
