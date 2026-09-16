@@ -1,3 +1,52 @@
+/* ボタン */
+.m-btn {
+ background-color      : #eeeeee;
+ border                : none;
+ color                 : #333333;
+ cursor                : pointer;
+ display               : inline-block;
+ font-family           : "Segoe UI", Helvetica, Arial, sans-serif;
+ font-size             : 14px;
+ line-height           : 14px;
+ margin                : 8px 0 0;
+ min-width             : 42px;
+ padding               : 10px 14px;
+ text-align            : center;
+ text-decoration       : none;
+ white-space           : nowrap;
+}
+.m-btn:hover,
+.m-btn:focus,
+.m-btn:active {
+ background-color      : #dcdcdc;
+ color                 : #333333;
+ text-decoration       : none;
+}
+.m-btn.blue {
+ background-color      : #4d90fe;
+ color                 : #ffffff;
+}
+.m-btn.blue:hover,
+.m-btn.blue:focus,
+.m-btn.blue:active {
+ background-color      : #0072bb;
+}
+.m-btn.red {
+ background-color      : #d84a38;
+ color                 : #ffffff;
+}
+.m-btn.red:hover,
+.m-btn.red:focus,
+.m-btn.red:active {
+ background-color      : #c53727;
+}
+.m-btn.rnd {
+ border-radius         : 5px;
+}
+.m-btn.icn-only {
+ min-width             : 14px;
+}
+
 /* 全体 */
 h1 {
  border                : solid #ccc;
