@@ -1,0 +1,156 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+<title>Excel課題評価[β版]</title>
+<meta charset="utf-8">
+<link href="font-awesome-4.6.3/css/font-awesome.min.css" rel="stylesheet">
+<link href="css3-microsoft-modern-buttons/css/m-buttons.min.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+<script src="./jquery.min.js"></script>
+<script src="./js/utf.js"></script>
+<script src="./js/base64.js"></script>
+<script src="./js/inflate.js"></script>
+<script src="./js/deflate.js"></script>
+<script src="./lib.js"></script>
+<script src="./main.js"></script>
+
+
+
+</head>
+<body>
+<div id="notice" class="pane right_pane">
+<pre>
+	Excel課題評価[β版] Ver0.9.4
+	
+	
+	[説明]
+	Excelの数式、関数に関する実習課題を評価する際に使います。
+	モデル（模範解答）ファイルと、複数の生徒が提出したファイルを読み込ませて、数式・関数や値を評価し○△×を表示します。
+	xlsx形式にのみ対応します。（xls形式は不可）
+	
+	[使い方]
+	1)「モデルファイルアップロード」ボタンをクリックして、モデル（模範解答）ファイルをアップロードし読み込みます。
+	
+	2)判定対象ファイルの「＋ファイル追加」ボタンをクリックし、生徒の提出ファイルをアップロードします。
+	　　　※同時に２０ファイルまでしかアップロードできませんが、ファイル追加を何度かすると、２０以上のファイルを読み込みできます。
+	
+	3)評価基準を設定します。評価基準データファイルの「→」ボタンをクリックし、シートを表示します。
+	　　右ペインに表示された、各シート、セルより、判定したい箇所を指定します。
+	
+	　　　●オレンジ…未入力チェック　　　　未選択（白）←→オレンジ　クリックで切り替わります。
+	
+	　　　●赤…数式、値を判定します。　　　未選択（白）←→赤　　　　ダブルクリックで切り替わります
+	　　　　　・詳細設定画面がポップアップします。
+	　　　　　　　数式、値にそれぞれ生徒が回答した数式のパターンと数が表示されています。
+	　　　　　　　判定欄をクリックすると　
+　　　　　　　　　　　　　　　　「○」正解→「△」部分点→「－」未判定→「　」不正解　　と切り替わります。
+	
+	
+	4)判定対象ファイルのファイル名をクリックすると、3)で設定した内容を元に、判定結果が表示されます。
+
+	5)「すべてを表示」ボタンをクリックすると、判定対象ファイルすべてを１ページに表示します。
+　　　　　　　※ただし、処理が重いため表示完了まで数分かかります。
+	
+　　　　＜注意点＞
+	※評価基準データ、判定対象ファイルをまとめてファイルに出力できます。（json形式）
+	※ブラウザに一時保存もできます。（ただし、保存可能最大容量はブラウザにより制限あり）
+	※アップロードしたxlsxファイルは、データ変換時にのみサーバ上に一時保存されますが、json形式変換後はすべてブラウザ上のJavaScript内で処理されます。
+	
+	[履歴]
+	Ver0.1   2016/09/16 モデル読み込み部分完成
+	Ver0.2   2016/09/17 評価対象ファイル読み込み部分
+	Ver0.3   2016/09/18 LocalStorageへデータを一時保存
+	Ver0.5   2016/09/19 基本処理部分完成
+	Ver0.6   2016/09/20 画面遷移の整理
+	Ver0.7   2016/09/21 データ保存機能の追加
+	Ver0.8   2016/09/22 PHP処理最適化、ファイル読み込みエラー処理追加
+	Ver0.9   2016/09/24 ブラウザへの保存機能修正、印刷用CSS設定
+	Ver0.9.1 2016/09/27 IE,Edgeで動くように修正（ただし遅い）
+	Ver0.9.2 2016/09/28 判定対象ファイル表示でも評価設定が変更可能に
+	Ver0.9.3 2016/09/30 ×判定を明示的にするように変更。不具合修正
+	Ver0.9.4 2016/09/30 採点結果点数化してを表示
+
+	TODO:使い方ページ作成、自己採点用ページ、セル複数範囲選択[shift+click]
+	
+	
+	Copyright (c) 2016 Jun Suzuki.
+	
+	infrate.js,defrate.js,base64.js,utf.js 
+	Masanao Izumo氏　のソースを利用　http://www.onicos.com/staff/iz/ 
+</pre>
+</div>
+
+
+<div id="left_pane" class="pane">
+	<h1>Excel課題評価 <small>Ver.0.9β</small></h1>
+	<h2>評価基準データファイル</h2>
+	<div id="group_modelupload">
+		<input type="file" id="modelupload" style="display:none">
+		<button class="m-btn blue rnd" onclick="document.getElementById('modelupload').click()" style="width: 100%;" ><i class="fa fa-upload"></i>　評価基準ファイルアップロード</button>
+	</div>
+	
+	<div id="group_show_model" style="border:solid 1px gray;display:none; text-align:right;">
+		<div id="model_filename" style="float:left;margin:10px;">評価基準ファイル設定済</div>
+		<button id="btn_show_model" class="m-btn blue icn-only" style="margin:0;"><i class="fa fa-arrow-right"></i></button>
+	</div>
+	<div class="group_filebtn">
+		<a href="#" id="btn_load_modelfile" class="filebutton m-btn rnd"><i class='fa fa-folder-o fa-2x'       style="float:left"></i>評価基準<br>を読込</a>
+		<input type="file" id="jsonmodelupload" style="display:none">
+		<a href="#" download="Excelモデルデータ.json" id="btn_save_modelfile" class="filebutton m-btn rnd"><i class='fa fa-floppy-o fa-2x'       style="float:left"></i>評価基準<br>を保存</a>
+
+    </div>
+	<h2>判定対象ファイル読込　<button class="m-btn rnd mini" id="btn_show_all_target">すべてを表示</button></h2>
+	<div id="group_modelupload">
+		<ul id="filelist"></ul>
+		<input type="file" id="fileupload" name="files[]" multiple style=" display:none" >
+		<div  style="text-align:right;">
+		<button class="m-btn rnd blue mini" onclick="document.getElementById('fileupload').click()"><i class="fa fa-plus"></i>ファイル追加</button>
+		</div>
+	</div>
+	<div class="group_filebtn">
+		<a href="#" id="btn_load_file" class="filebutton m-btn rnd"><i class='fa fa-folder-o fa-2x'       style="float:left"></i>判定対象を<br>すべて読込</a>
+		<a href="#" download="Excel評価データ.json" id="btn_save_file" class="filebutton m-btn rnd"><i class='fa fa-floppy-o fa-2x'       style="float:left"></i>判定対象を<br>すべて保存</a>
+		<input type="file" id="jsonupload" style="display:none">
+	</div>
+	<div class="group_filebtn">
+		<a href="#" id="btn_load_tmp" class="filebutton m-btn rnd"><i class='fa fa-cloud-download fa-2x' style="float:left"></i>ブラウザ<br>から読込</a>
+		<a href="#" id="btn_save_tmp" class="filebutton m-btn rnd"><i class='fa fa-cloud-upload fa-2x'   style="float:left"></i>ブラウザ<br>に記憶</a>
+
+    </div>
+	
+</div>
+
+
+
+
+<div id="form_model" class="pane right_pane" style="display:none">right_pane</div>
+<div id='result_form' class='pane right_pane' style="display:none">right_pane</div>
+
+<div id="form_evalcell" class="popup">
+	<button id="btn_back_sheet">＜モデル設定に戻る</button>
+	<h2 id="eval_caption">シート名-セル番地</h2>
+	<div class='exceltable'>
+		<div id='title_formula' class='sheettab'>数式</div>
+		<table class='bordered' id="table_f">
+		</table>
+	</div>
+	<div class='exceltable'>
+		<div id='title_value' class='sheettab'>値</div>
+		<table class='bordered' id="table_v">
+		</table>
+	</div>
+</div>
+
+<div style="display:none;">
+<span id="label_point_10" class="label">○</span>
+<span id="label_point_5"  class="label">△</span>
+<span id="label_point_0"  class="label">？</span>
+<span id="label_eval_ng"  class="label">×</span>
+<span id="label_isset_ng" class="label">×未入力</span>
+</div>
+
+<div id="hover_cell" style="display:none;">
+123
+</div>
+</body>
+</html>
